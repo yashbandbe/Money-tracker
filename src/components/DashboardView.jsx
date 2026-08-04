@@ -73,16 +73,18 @@ export default function DashboardView({
     ]
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
   const donutOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right',
+        position: isMobile ? 'bottom' : 'right',
         labels: {
           color: '#94a3b8',
-          font: { family: 'Inter', size: 12 },
-          padding: 14,
+          font: { family: 'Inter', size: isMobile ? 11 : 12 },
+          padding: isMobile ? 8 : 14,
           usePointStyle: true
         }
       },

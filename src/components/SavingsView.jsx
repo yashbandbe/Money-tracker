@@ -127,7 +127,7 @@ export default function SavingsView({
       </div>
 
       {/* Goals Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
         {goals.map((g) => {
           const percent = Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
           const isCompleted = g.currentAmount >= g.targetAmount;

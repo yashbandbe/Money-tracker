@@ -49,13 +49,15 @@ export default function AnalyticsView({ transactions, currency }) {
     ]
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
   const paymentChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right',
-        labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 }, usePointStyle: true }
+        position: isMobile ? 'bottom' : 'right',
+        labels: { color: '#94a3b8', font: { family: 'Inter', size: isMobile ? 11 : 12 }, usePointStyle: true }
       },
       tooltip: {
         callbacks: {

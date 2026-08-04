@@ -124,7 +124,7 @@ export default function BudgetsView({
       </div>
 
       {/* Header and Add Action */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
         <div>
           <h2 className="font-heading">Category Budgets</h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Set monthly spending limits and monitor real-time progress</p>
@@ -136,7 +136,7 @@ export default function BudgetsView({
       </div>
 
       {/* Category Budget Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
         {budgets.map((b) => {
           const cat = CATEGORIES[b.category] || CATEGORIES.other;
           const spent = getSpentForCategory(b.category);

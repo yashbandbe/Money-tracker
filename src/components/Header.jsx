@@ -9,8 +9,7 @@ import {
   Plus, 
   Moon, 
   Sun,
-  CloudCheck,
-  Cloud
+  CloudCheck
 } from 'lucide-react';
 import { CURRENCIES } from '../utils/initialData';
 import { isSupabaseConfigured } from '../utils/supabaseClient';
@@ -25,102 +24,134 @@ export default function Header({
   onOpenAddTransaction 
 }) {
   return (
-    <header className="app-header">
-      <div className="brand-logo">
-        <div className="brand-icon-wrapper">
-          <Compass size={24} />
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <>
+      {/* Main Top Header */}
+      <header className="app-header">
+        <div className="brand-logo">
+          <div className="brand-icon-wrapper">
+            <Compass size={22} />
+          </div>
+          <div className="brand-text-container">
             <h1 className="brand-title">WealthPilot</h1>
             {isSupabaseConfigured && (
-              <span 
-                style={{
-                  fontSize: '0.72rem',
-                  fontWeight: '600',
-                  color: '#10b981',
-                  background: 'rgba(16, 185, 129, 0.12)',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  border: '1px solid rgba(16, 185, 129, 0.3)'
-                }}
-                title="Connected to Supabase Cloud Database"
-              >
-                <CloudCheck size={12} /> Supabase Sync
+              <span className="supabase-badge" title="Connected to Supabase Cloud Database">
+                <CloudCheck size={11} /> Sync
               </span>
             )}
           </div>
         </div>
-      </div>
 
-      <nav className="nav-tabs">
+        {/* Desktop Navigation Tabs */}
+        <nav className="nav-tabs desktop-only">
+          <button 
+            className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </button>
+          <button 
+            className={`nav-tab-btn ${activeTab === 'transactions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('transactions')}
+          >
+            <Receipt size={18} />
+            <span>Transactions</span>
+          </button>
+          <button 
+            className={`nav-tab-btn ${activeTab === 'budgets' ? 'active' : ''}`}
+            onClick={() => setActiveTab('budgets')}
+          >
+            <PieChart size={18} />
+            <span>Budgets</span>
+          </button>
+          <button 
+            className={`nav-tab-btn ${activeTab === 'goals' ? 'active' : ''}`}
+            onClick={() => setActiveTab('goals')}
+          >
+            <Target size={18} />
+            <span>Goals</span>
+          </button>
+          <button 
+            className={`nav-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            <TrendingUp size={18} />
+            <span>Analytics</span>
+          </button>
+        </nav>
+
+        {/* Header Action Controls */}
+        <div className="header-actions">
+          <select 
+            className="select-input currency-select"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            title="Select Currency"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.symbol} {c.code}
+              </option>
+            ))}
+          </select>
+
+          <button 
+            className="icon-btn theme-toggle-btn" 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          <button className="btn-primary add-record-btn" onClick={onOpenAddTransaction}>
+            <Plus size={18} />
+            <span className="add-btn-text">Add Record</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Fixed Bottom Navigation Bar */}
+      <nav className="mobile-bottom-bar mobile-only">
         <button 
-          className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+          className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('dashboard')}
         >
-          <LayoutDashboard size={18} />
-          <span>Dashboard</span>
+          <LayoutDashboard size={20} />
+          <span>Overview</span>
         </button>
+
         <button 
-          className={`nav-tab-btn ${activeTab === 'transactions' ? 'active' : ''}`}
+          className={`mobile-nav-item ${activeTab === 'transactions' ? 'active' : ''}`}
           onClick={() => setActiveTab('transactions')}
         >
-          <Receipt size={18} />
-          <span>Transactions</span>
+          <Receipt size={20} />
+          <span>Expenses</span>
         </button>
+
         <button 
-          className={`nav-tab-btn ${activeTab === 'budgets' ? 'active' : ''}`}
+          className="mobile-fab-btn"
+          onClick={onOpenAddTransaction}
+          title="Add New Record"
+        >
+          <Plus size={22} />
+        </button>
+
+        <button 
+          className={`mobile-nav-item ${activeTab === 'budgets' ? 'active' : ''}`}
           onClick={() => setActiveTab('budgets')}
         >
-          <PieChart size={18} />
+          <PieChart size={20} />
           <span>Budgets</span>
         </button>
+
         <button 
-          className={`nav-tab-btn ${activeTab === 'goals' ? 'active' : ''}`}
+          className={`mobile-nav-item ${activeTab === 'goals' ? 'active' : ''}`}
           onClick={() => setActiveTab('goals')}
         >
-          <Target size={18} />
+          <Target size={20} />
           <span>Goals</span>
         </button>
-        <button 
-          className={`nav-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('analytics')}
-        >
-          <TrendingUp size={18} />
-          <span>Analytics</span>
-        </button>
       </nav>
-
-      <div className="header-actions">
-        <select 
-          className="select-input"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          title="Select Currency"
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-
-        <button 
-          className="icon-btn" 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title="Toggle Theme"
-        >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-
-        <button className="btn-primary" onClick={onOpenAddTransaction}>
-          <Plus size={18} />
-          <span>Add Record</span>
-        </button>
-      </div>
-    </header>
+    </>
   );
 }

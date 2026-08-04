@@ -19,6 +19,18 @@ import {
   resetAllData
 } from './utils/storage';
 
+import {
+  fetchCloudTransactions,
+  syncTransactionToCloud,
+  deleteTransactionFromCloud,
+  fetchCloudBudgets,
+  syncBudgetToCloud,
+  fetchCloudGoals,
+  syncGoalToCloud
+} from './utils/supabaseStorage';
+
+import { isSupabaseConfigured } from './utils/supabaseClient';
+
 export default function App() {
   const [transactions, setTransactions] = useState(getStoredTransactions);
   const [budgets, setBudgets] = useState(getStoredBudgets);
@@ -32,6 +44,36 @@ export default function App() {
   // Modal State
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
+
+  // Fetch initial data from Supabase Cloud if available
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      fetchCloudTransactions().then(cloudTxs => {
+        if (cloudTxs && cloudTxs.length > 0) {
+          setTransactions(cloudTxs);
+        } else if (cloudTxs && cloudTxs.length === 0 && transactions.length > 0) {
+          // Push initial local transactions to cloud
+          transactions.forEach(t => syncTransactionToCloud(t));
+        }
+      });
+
+      fetchCloudBudgets().then(cloudBudgets => {
+        if (cloudBudgets && cloudBudgets.length > 0) {
+          setBudgets(cloudBudgets);
+        } else if (cloudBudgets && cloudBudgets.length === 0 && budgets.length > 0) {
+          budgets.forEach(b => syncBudgetToCloud(b));
+        }
+      });
+
+      fetchCloudGoals().then(cloudGoals => {
+        if (cloudGoals && cloudGoals.length > 0) {
+          setGoals(cloudGoals);
+        } else if (cloudGoals && cloudGoals.length === 0 && goals.length > 0) {
+          goals.forEach(g => syncGoalToCloud(g));
+        }
+      });
+    }
+  }, []);
 
   // Sync localStorage & theme
   useEffect(() => {
@@ -51,13 +93,32 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [currency, theme]);
 
-  // Actions
+  // Actions with Supabase Cloud Syncing
   const handleSaveTransaction = (record) => {
     if (editingTx) {
       setTransactions(transactions.map(t => t.id === record.id ? record : t));
     } else {
       setTransactions([record, ...transactions]);
     }
+    // Sync to Cloud
+    syncTransactionToCloud(record);
+  };
+
+  const handleDeleteTransaction = (id) => {
+    if (window.confirm('Are you sure you want to delete this transaction record?')) {
+      setTransactions(transactions.filter(t => t.id !== id));
+      deleteTransactionFromCloud(id);
+    }
+  };
+
+  const handleUpdateBudgets = (newBudgets) => {
+    setBudgets(newBudgets);
+    newBudgets.forEach(b => syncBudgetToCloud(b));
+  };
+
+  const handleUpdateGoals = (newGoals) => {
+    setGoals(newGoals);
+    newGoals.forEach(g => syncGoalToCloud(g));
   };
 
   const handleEditTransaction = (tx) => {
@@ -76,6 +137,11 @@ export default function App() {
       setTransactions(demo.transactions);
       setBudgets(demo.budgets);
       setGoals(demo.goals);
+      if (isSupabaseConfigured) {
+        demo.transactions.forEach(t => syncTransactionToCloud(t));
+        demo.budgets.forEach(b => syncBudgetToCloud(b));
+        demo.goals.forEach(g => syncGoalToCloud(g));
+      }
     }
   };
 
@@ -106,9 +172,14 @@ export default function App() {
           <TransactionsView 
             transactions={transactions}
             setTransactions={setTransactions}
+            budgets={budgets}
+            setBudgets={handleUpdateBudgets}
+            goals={goals}
+            setGoals={handleUpdateGoals}
             currency={currency}
             onOpenAddTransaction={handleOpenAdd}
             onEditTransaction={handleEditTransaction}
+            onDeleteTransaction={handleDeleteTransaction}
             onResetDemoData={handleResetData}
           />
         )}
@@ -116,7 +187,7 @@ export default function App() {
         {activeTab === 'budgets' && (
           <BudgetsView 
             budgets={budgets}
-            setBudgets={setBudgets}
+            setBudgets={handleUpdateBudgets}
             transactions={transactions}
             currency={currency}
           />
@@ -125,7 +196,7 @@ export default function App() {
         {activeTab === 'goals' && (
           <SavingsView 
             goals={goals}
-            setGoals={setGoals}
+            setGoals={handleUpdateGoals}
             currency={currency}
           />
         )}

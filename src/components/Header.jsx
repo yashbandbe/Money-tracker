@@ -9,9 +9,11 @@ import {
   Plus, 
   Moon, 
   Sun,
-  Coins
+  CloudCheck,
+  Cloud
 } from 'lucide-react';
 import { CURRENCIES } from '../utils/initialData';
+import { isSupabaseConfigured } from '../utils/supabaseClient';
 
 export default function Header({ 
   activeTab, 
@@ -29,7 +31,28 @@ export default function Header({
           <Compass size={24} />
         </div>
         <div>
-          <h1 className="brand-title">WealthPilot</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h1 className="brand-title">WealthPilot</h1>
+            {isSupabaseConfigured && (
+              <span 
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '600',
+                  color: '#10b981',
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  border: '1px solid rgba(16, 185, 129, 0.3)'
+                }}
+                title="Connected to Supabase Cloud Database"
+              >
+                <CloudCheck size={12} /> Supabase Sync
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

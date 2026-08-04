@@ -10,7 +10,7 @@ const KEYS = {
 export const getStoredTransactions = () => {
   try {
     const data = localStorage.getItem(KEYS.TRANSACTIONS);
-    return data ? JSON.parse(data) : INITIAL_TRANSACTIONS;
+    return data !== null ? JSON.parse(data) : INITIAL_TRANSACTIONS;
   } catch (e) {
     console.error('Failed to load transactions from localStorage', e);
     return INITIAL_TRANSACTIONS;
@@ -28,7 +28,7 @@ export const saveStoredTransactions = (transactions) => {
 export const getStoredBudgets = () => {
   try {
     const data = localStorage.getItem(KEYS.BUDGETS);
-    return data ? JSON.parse(data) : INITIAL_BUDGETS;
+    return data !== null ? JSON.parse(data) : INITIAL_BUDGETS;
   } catch (e) {
     console.error('Failed to load budgets from localStorage', e);
     return INITIAL_BUDGETS;
@@ -46,7 +46,7 @@ export const saveStoredBudgets = (budgets) => {
 export const getStoredGoals = () => {
   try {
     const data = localStorage.getItem(KEYS.GOALS);
-    return data ? JSON.parse(data) : INITIAL_GOALS;
+    return data !== null ? JSON.parse(data) : INITIAL_GOALS;
   } catch (e) {
     console.error('Failed to load goals from localStorage', e);
     return INITIAL_GOALS;
@@ -64,7 +64,7 @@ export const saveStoredGoals = (goals) => {
 export const getStoredSettings = () => {
   try {
     const data = localStorage.getItem(KEYS.SETTINGS);
-    return data ? JSON.parse(data) : { currency: 'USD', theme: 'dark' };
+    return data !== null ? JSON.parse(data) : { currency: 'USD', theme: 'dark' };
   } catch (e) {
     return { currency: 'USD', theme: 'dark' };
   }
@@ -87,4 +87,21 @@ export const resetAllData = () => {
     budgets: INITIAL_BUDGETS,
     goals: INITIAL_GOALS
   };
+};
+
+export const exportFullBackup = (transactions, budgets, goals) => {
+  const backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    transactions,
+    budgets,
+    goals
+  };
+  const jsonStr = JSON.stringify(backup, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wealthpilot_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
 };

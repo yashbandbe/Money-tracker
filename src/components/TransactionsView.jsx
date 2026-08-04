@@ -1,23 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Search, 
-  Filter, 
   Download, 
   Trash2, 
   Edit3, 
   Plus,
   RefreshCw,
-  ArrowUpDown
+  Upload,
+  FileJson
 } from 'lucide-react';
 import { CATEGORIES, PAYMENT_METHODS } from '../utils/initialData';
 import { formatCurrency, getCategoryIcon } from '../utils/formatters';
+import { exportFullBackup } from '../utils/storage';
 
 export default function TransactionsView({ 
   transactions, 
   setTransactions, 
+  budgets,
+  setBudgets,
+  goals,
+  setGoals,
   currency, 
   onOpenAddTransaction,
   onEditTransaction,
+  onDeleteTransaction,
   onResetDemoData 
 }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +31,7 @@ export default function TransactionsView({
   const [selectedType, setSelectedType] = useState('all');
   const [selectedPayment, setSelectedPayment] = useState('all');
   const [sortBy, setSortBy] = useState('date-desc');
+  const fileInputRef = useRef(null);
 
   // Filtering
   const filtered = transactions.filter((tx) => {
@@ -50,8 +57,17 @@ export default function TransactionsView({
 
   // Delete Transaction
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this transaction record?')) {
+    if (onDeleteTransaction) {
+      onDeleteTransaction(id);
+    } else if (window.confirm('Are you sure you want to delete this transaction record?')) {
       setTransactions(transactions.filter(t => t.id !== id));
+    }
+  };
+
+  // Clear All Transactions
+  const handleClearAll = () => {
+    if (window.confirm('Are you sure you want to wipe all transaction records? This action cannot be undone unless you have a backup.')) {
+      setTransactions([]);
     }
   };
 
@@ -80,6 +96,31 @@ export default function TransactionsView({
     document.body.removeChild(link);
   };
 
+  // Import JSON Backup
+  const handleImportJSON = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.transactions && Array.isArray(parsed.transactions)) {
+          setTransactions(parsed.transactions);
+          if (parsed.budgets && Array.isArray(parsed.budgets)) setBudgets(parsed.budgets);
+          if (parsed.goals && Array.isArray(parsed.goals)) setGoals(parsed.goals);
+          alert('Backup restored successfully!');
+        } else {
+          alert('Invalid backup file format.');
+        }
+      } catch (err) {
+        alert('Error parsing JSON backup file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="transactions-view">
       <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
@@ -87,19 +128,43 @@ export default function TransactionsView({
           <div>
             <h2 className="font-heading">Transactions Manager</h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Manage, search, filter, and export all income & expense logs
+              Manage, search, filter, export, and import your income & expense logs
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button className="btn-secondary" onClick={() => exportFullBackup(transactions, budgets, goals)} title="Download full JSON backup">
+              <FileJson size={16} />
+              <span>Backup Data</span>
+            </button>
+
+            <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} title="Import JSON backup file">
+              <Upload size={16} />
+              <span>Restore JSON</span>
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept=".json" 
+              onChange={handleImportJSON} 
+            />
+
             <button className="btn-secondary" onClick={handleExportCSV}>
               <Download size={16} />
               <span>Export CSV</span>
             </button>
+
             <button className="btn-secondary" onClick={onResetDemoData} title="Reset demo dataset">
               <RefreshCw size={16} />
-              <span>Reset Data</span>
+              <span>Reset Demo</span>
             </button>
+
+            <button className="btn-secondary" style={{ color: '#ef4444' }} onClick={handleClearAll} title="Clear all records">
+              <Trash2 size={16} />
+              <span>Clear All</span>
+            </button>
+
             <button className="btn-primary" onClick={onOpenAddTransaction}>
               <Plus size={16} />
               <span>Add New</span>
@@ -260,7 +325,7 @@ export default function TransactionsView({
               ) : (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                    No transactions match your search filter criteria.
+                    No transactions found. Click "+ Add New" to record your first transaction!
                   </td>
                 </tr>
               )}
